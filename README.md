@@ -147,7 +147,7 @@ Update all of them if the number changes.
 
 1. Push the project to a Git repository.
 2. Import the repository in Vercel.
-3. Framework preset: **Other**. No build command is required for Vercel because the site is static and `api/` is detected automatically. You can set the build command to `npm run build` if you want the verification step to run on every deploy; leave the output directory at the project root.
+3. Framework preset: **Other**. `vercel.json` sets the build command to `npm run build` and the output directory to `dist`, so the validation step runs on every deploy. The `api/` folder is still detected and deployed as serverless functions. Do not override the output directory in the dashboard.
 4. Add the environment variables from `.env.example`.
 5. Deploy.
 6. In **Project → Settings → Domains**, add `urbaniacabsbanglore.com` and `www.urbaniacabsbanglore.com`.

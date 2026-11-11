@@ -8,8 +8,8 @@
  *   - syntax-checks the JavaScript
  *   - writes a deployable static copy to dist/ for cPanel, Netlify or similar
  *
- * Vercel serves the repository root and deploys api/ as serverless functions,
- * so it does not need the dist/ folder.
+ * Vercel runs this build and publishes dist/ as the static output, while api/
+ * is deployed separately as serverless functions.
  */
 
 var fs = require("node:fs");
@@ -316,7 +316,7 @@ function main() {
 
   console.log("\nBuild passed.");
   console.log("Static export written to dist/.");
-  console.log("Vercel deploys the repository root plus api/ serverless functions.");
+  console.log("Vercel publishes dist/ and deploys api/ as serverless functions.");
 }
 
 main();
