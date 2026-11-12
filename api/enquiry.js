@@ -2,6 +2,7 @@
 
 var enquiry = require("../lib/enquiry");
 var rateLimit = require("../lib/rate-limit").rateLimit;
+var database = require("../lib/supabase");
 
 var TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 var TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
@@ -141,6 +142,25 @@ module.exports = async function handler(req, res) {
   var reference = enquiry.createReference();
   var text = enquiry.formatEnquiry(result.data, reference);
   var whatsappUrl = enquiry.buildWhatsAppUrl(result.data, reference);
+  var saved = false;
+
+  if (database.configured()) {
+    try {
+      await database.saveBooking(result.data, reference);
+      saved = true;
+    } catch (error) {
+      console.error("Booking persistence failed:", error && error.message ? error.message : "unknown");
+      res.statusCode = 503;
+      res.end(JSON.stringify({
+        ok: false,
+        error: "booking_storage_unavailable",
+        reference: reference,
+        whatsappUrl: whatsappUrl,
+        message: "We could not save your enquiry just now. Please send it through WhatsApp."
+      }));
+      return;
+    }
+  }
 
   if (!telegramConfigured()) {
     res.statusCode = 200;
@@ -149,6 +169,7 @@ module.exports = async function handler(req, res) {
         ok: true,
         notified: false,
         configured: false,
+        saved: saved,
         reference: reference,
         whatsappUrl: whatsappUrl
       })
@@ -164,6 +185,7 @@ module.exports = async function handler(req, res) {
         ok: true,
         notified: true,
         configured: true,
+        saved: saved,
         reference: reference,
         whatsappUrl: whatsappUrl
       })
@@ -179,6 +201,7 @@ module.exports = async function handler(req, res) {
         ok: false,
         error: "notification_failed",
         configured: true,
+        saved: saved,
         reference: reference,
         whatsappUrl: whatsappUrl
       })
