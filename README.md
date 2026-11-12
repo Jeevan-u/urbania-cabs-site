@@ -258,3 +258,42 @@ Urbania Cabs Bangalore
 Bangalore, Karnataka  
 Phone / WhatsApp: [+91 96323 45415](tel:+919632345415)  
 Email: [skycabsbangalore@gmail.com](mailto:skycabsbangalore@gmail.com)
+
+
+## Supabase booking database (new)
+
+The Supabase integration is optional until configured. When the server-side Supabase variables are present, each valid enquiry is saved to `public.bookings` before Telegram/WhatsApp handoff. If the database is configured but cannot save, the API returns a clear error and a WhatsApp fallback URL; it does not silently report that the enquiry was stored.
+
+### Setup
+
+1. Create or open your Supabase project.
+2. In **SQL Editor**, run the complete script in `supabase/schema.sql`.
+3. In **Project Settings → API**, copy the Project URL and publishable/anon key.
+4. Add these variables to Vercel under **Project → Settings → Environment Variables** for Production, Preview and Development:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+5. Add the same values to your local `.env` file for local testing.
+6. Redeploy the Vercel project after saving the environment variables.
+
+**Security:** `SUPABASE_SERVICE_ROLE_KEY` is a secret. Keep it only in Vercel server environment variables and your private local `.env`. Never put it in HTML, browser JavaScript, GitHub, screenshots or chat. The SQL schema enables Row Level Security and intentionally creates no public policies for bookings, vehicles, drivers or assignments.
+
+### First admin account
+
+1. In Supabase **Authentication → Users**, create/invite the business owner's login.
+2. Copy that user's UUID.
+3. In SQL Editor, run the profile insert below after replacing the email and display name:
+
+```sql
+insert into public.profiles (id, full_name, role)
+select id, 'Business Owner', 'owner'
+from auth.users
+where email = 'OWNER_EMAIL'
+on conflict (id) do update set role = 'owner';
+```
+
+The `/api/admin-bookings` endpoint accepts a Supabase Auth access token in the Authorization Bearer header. It allows an authenticated `admin` or `owner` profile to list the latest 100 bookings and update a booking status. It returns 401/403 for unauthenticated/non-admin users.
+
+### Current implementation boundary
+
+This commit adds database schema, server-side booking persistence and a protected admin bookings API. It does **not yet include** the browser login/OTP screens, a visual admin dashboard, customer self-service booking history, or fleet/driver management screens and APIs. Phone OTP also needs an SMS provider configured in Supabase and may incur charges. These should be added as separate tested stages rather than exposing privileged database access to the browser.
