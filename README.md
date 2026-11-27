@@ -11,7 +11,7 @@ An enquiry-based website for **Urbania Cabs Bangalore**, a premium cab rental se
 ## What is included
 
 - Responsive premium design with a self-hosted font pair (Manrope and Fraunces) and an inline SVG icon sprite.
-- Video hero with a poster fallback and a configurable video path.
+- Video hero that plays the supplied `URBANIAVEDIO.mp4` as a muted, looping background, with a poster fallback.
 - Four dynamic enquiry types: outstation, local rental, airport transfer and corporate booking.
 - Google Places autocomplete, current-location support, permission-denial handling and manual address entry.
 - Enquiry delivery through a formatted WhatsApp message to `+91 96323 45415`, plus an optional Telegram notification to the team.
@@ -42,7 +42,7 @@ An enquiry-based website for **Urbania Cabs Bangalore**, a premium cab rental se
 │   ├── js/main.js              All front-end behaviour
 │   ├── fonts/                  Self-hosted WOFF2 fonts
 │   ├── img/                    Optimised WebP images, OG image, icons, hero poster
-│   └── urbania-hero.mp4        Hero video (not included, see below)
+│   └── urbania-hero.mp4        Hero background video (from URBANIAVEDIO.mp4)
 ├── images/                     Original JPG and PNG source images
 ├── api/
 │   ├── enquiry.js              Vercel function: validation, Telegram, WhatsApp URL
@@ -118,7 +118,7 @@ The required path is:
 assets/urbania-hero.mp4
 ```
 
-The video file is **not included** in this repository. The hero uses `assets/img/hero-poster.webp` until the file is added. The JavaScript checks for the file with a `HEAD` request, then adds the video source only when it exists. This avoids a broken video element and layout shift.
+The supplied `URBANIAVEDIO.mp4` has been placed at this path and plays muted, looping and inline on the homepage hero. The poster `assets/img/hero-poster.webp` is shown immediately and stays visible if the video cannot load, autoplay is blocked, the visitor prefers reduced motion, or Save-Data is enabled. The JavaScript checks the file with a `HEAD` request before adding the source, so there is no broken video element or layout shift.
 
 Recommended format: H.264 MP4, 1920×1080 or 1280×720, muted-friendly, no audio dependency, ideally under 6–8 MB. Keep the poster image visually close to the first video frame.
 
@@ -228,7 +228,7 @@ npm run dev
 node scripts/smoke.js
 ```
 
-The smoke test checks trip tabs, validation, the WhatsApp flow, location denial, the mobile menu, overflow from 320 px to 1440 px, image loading, legal pages and console errors. It ignores the expected 404 for the optional hero video while that file is absent.
+The smoke test checks trip tabs, validation, the WhatsApp flow, location denial, the mobile menu, overflow from 320 px to 1440 px, image loading, hero video playback, legal pages and console errors.
 
 Manual:
 
@@ -243,12 +243,11 @@ Manual:
 9. Test address suggestions with the Places key, then remove the key and confirm the manual-entry notice appears.
 10. Test the current-location button with permission allowed and denied.
 11. Check the browser console for errors on every page.
-12. Confirm the hero poster appears when `assets/urbania-hero.mp4` is missing, and the video plays when it is present.
+12. Confirm the hero video plays behind the content, and that the poster remains if the video is unavailable.
 13. Run Lighthouse on mobile and desktop.
 
 ## Known gaps
 
-- `assets/urbania-hero.mp4` is not supplied. Add it to enable the video hero; the poster fallback is already in place.
 - Telegram and Google Places credentials are not supplied. The integrations are built and documented but remain unconfigured until the environment variables are set.
 - Vehicle photographs are illustrative. Confirm the actual vehicle and seating layout with each enquiry.
 

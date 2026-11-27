@@ -163,7 +163,17 @@ async function main() {
     check(JSON.stringify(basics.panels) === JSON.stringify([false, true, true, true]), "only outstation panel is open");
     check(basics.placesNotice.indexOf("is-visible") !== -1, "manual-entry notice is visible without Places");
     check(basics.locateVisible, "current-location buttons are available");
-    check(!basics.videoSource && basics.poster, "hero uses the poster when the video is missing");
+    check(basics.videoSource && basics.poster, "hero video loads over the poster fallback");
+    await wait(3200);
+    var videoState = await page.evaluate(`(function () {
+      var video = document.querySelector("[data-hero-video]");
+      return {
+        ready: video.classList.contains("is-ready"),
+        playing: !video.paused && !video.ended,
+        time: video.currentTime
+      };
+    })()`);
+    check(videoState.ready && videoState.playing, "hero video starts playing in the background");
     check(!basics.overflow, "no horizontal overflow at the initial viewport");
     check(basics.title.indexOf("Urbania Cabs Bangalore") !== -1, "page title is present");
 
@@ -382,8 +392,6 @@ async function main() {
     var realErrors = page.consoleErrors.filter(function (error) {
       if (!error) return false;
       if (error.indexOf("favicon") !== -1) return false;
-      /* The hero video is optional and absent in this checkout; the poster covers it. */
-      if (error.indexOf("urbania-hero.mp4") !== -1) return false;
       return true;
     });
     check(page.exceptions.length === 0, "no uncaught JavaScript exceptions");
